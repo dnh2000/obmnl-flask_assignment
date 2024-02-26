@@ -1,5 +1,6 @@
 # Import libraries
-
+from  flask import Flask, render_template, request, redirect, url_for
+app = Flask(__name__)
 # Instantiate Flask functionality
 
 # Sample data
@@ -13,7 +14,7 @@ transactions = [
 def get_transactions():
     return render_template("transactions.html", transactions=transactions)
 # Create operation
-@app.rout("/add", methods=["GET", "POST"])
+@app.route("/add", methods=["GET", "POST"])
 def add_transaction():
     if request.method == 'POST':
         transaction = {
@@ -23,10 +24,31 @@ def add_transaction():
         }
         transactions.append(transaction)
         return redirect(url_for("get_transactions"))
-    return render_tempalte("form.html")
+    return render_template("form.html")
 # Update operation
+@app.route("/edit/<int:transaction_id>", methods=["GET", "POST"])
+def edit_transaction(transaction_id):
+    if request.method == 'POST':
+        date = request.form['date']
+        amount = float(request.form['amount'])
 
+        for transaction in transactions:
+            if transaction['id'] == transaction_id:
+                transaction['date'] = date
+                transaction['amount'] = amount
+                break
+        return redirect(url_for("get_transactions"))
+    for transaction in transactions:
+        if transaction['id'] == transaction_id:
+            return render_template("edit.html", transaction=transaction)
 # Delete operation
-
+@app.route("/delete/<int:transaction_id>")
+def delete_transaction(transaction_id):
+    for transaction in transactions:
+        if transaction['id'] == transaction_id:
+            transactions.remove(transaction)
+            break
+    return redirect(url_for("get_transactions"))
 # Run the Flask app
-    
+if __name__ == "__main__":
+    app.run(debug=True)
